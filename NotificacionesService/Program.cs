@@ -55,7 +55,8 @@ _ = Task.Run(() =>
             var noti = new Notificacion
             {
                 IdUsuario = data.IdUsuario,
-                Mensaje = $"🎉 ¡Bienvenido {data.Nombre} a Reto Chimba!"
+                Mensaje = $"🎉 ¡Bienvenido {data.Nombre} a Reto Chimba!",
+                TipoUsuario = data.Tipo
             };
 
             db.Notificaciones.Add(noti);
