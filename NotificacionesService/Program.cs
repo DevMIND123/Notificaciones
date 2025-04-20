@@ -5,13 +5,30 @@ using NotificacionesService.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// DB Context
+// 🔓 CORS: permitir frontend Angular en localhost:4200
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:4200")
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
+// 📦 DB Context
 builder.Services.AddDbContext<NotificacionesDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 var app = builder.Build();
 
-// Endpoint GET /notificaciones/{idUsuario}
+// 🧭 Requerido para enrutar las peticiones
+app.UseRouting();
+
+// 🧠 Activar CORS correctamente entre Routing y Endpoints
+app.UseCors("AllowFrontend");
+
+// ✅ Endpoint GET /notificaciones/{idUsuario}
 app.MapGet("/api.retochimba.com/notificaciones/{idUsuario}", async (int idUsuario, NotificacionesDbContext db) =>
 {
     var notis = await db.Notificaciones
@@ -21,7 +38,7 @@ app.MapGet("/api.retochimba.com/notificaciones/{idUsuario}", async (int idUsuari
     return Results.Ok(notis);
 });
 
-// Iniciar consumidor de Kafka
+// 🚀 Iniciar consumidor Kafka
 var config = new ConsumerConfig
 {
     BootstrapServers = builder.Configuration["Kafka:BootstrapServers"],
