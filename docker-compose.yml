@@ -1,0 +1,25 @@
+version: "3.8"
+
+services:
+  notificaciones-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: notificaciones_service
+    ports:
+      - "5005:8080"
+    environment:
+      - ConnectionStrings__DefaultConnection
+      - Kafka__BootstrapServers
+      - Kafka__Topic
+      - Kafka__GroupId
+      - DOTNET_ENVIRONMENT
+    env_file:
+      - .env
+    networks:
+      - devNetworkArq
+    restart: unless-stopped
+
+networks:
+  devNetworkArq:
+    external: true

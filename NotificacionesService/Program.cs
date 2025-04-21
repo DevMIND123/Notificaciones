@@ -5,12 +5,12 @@ using NotificacionesService.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 🔓 CORS: permitir frontend Angular en localhost:4200
+// 🔓 CORS: permitir frontend Angular en la VM#9
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins("http://localhost:4200")
+        policy.WithOrigins("http://10.43.101.86", "http://10.43.103.104")
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
@@ -43,7 +43,8 @@ var config = new ConsumerConfig
 {
     BootstrapServers = builder.Configuration["Kafka:BootstrapServers"],
     GroupId = builder.Configuration["Kafka:GroupId"],
-    AutoOffsetReset = AutoOffsetReset.Earliest
+    AutoOffsetReset = AutoOffsetReset.Earliest,
+    SecurityProtocol = SecurityProtocol.Plaintext
 };
 
 _ = Task.Run(() =>
