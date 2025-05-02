@@ -1,0 +1,39 @@
+version: "3.8"
+
+services:
+  postgres-notificaciones:
+    image: postgres:13
+    container_name: postgres-notificaciones
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_DB: notificacionesdb
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    volumes:
+      - postgres_notificaciones_data:/var/lib/postgresql/data
+    networks:
+      - notificaciones-network
+
+  notificaciones-service:
+    build: .
+    container_name: notificaciones-service
+    ports:
+      - "5005:5005"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=postgres-notificaciones;Port=5432;Database=notificacionesdb;Username=user;Password=password
+      - Kafka__BootstrapServers=localhost:9092
+      - Kafka__Topic=usuario-creado
+      - Kafka__GroupId=notificaciones-group
+      - Jwt__Secret=mi_clave_super_secreta_para_firmar_tokens_123456
+    depends_on:
+      - postgres-notificaciones
+    networks:
+      - notificaciones-network
+
+volumes:
+  postgres_notificaciones_data:
+
+networks:
+  notificaciones-network:
