@@ -132,11 +132,29 @@ _ = Task.Run(() =>
                         TipoUsuario = "CLIENTE"
                     };
                     db.Notificaciones.Add(noti);
-                    db.SaveChanges();
                 }
                 else
                 {
                     Console.WriteLine("⛔ Datos del evento ciclo inválidos.");
+                }
+            }
+            else if (cr.Topic == "embarazo-registrado")
+            {
+                var data = JsonSerializer.Deserialize<EventoEmbarazoKafkaDTO>(cr.Message.Value);
+                if (data is not null && !string.IsNullOrEmpty(data.EmailUsuario) && !string.IsNullOrEmpty(data.Mensaje))
+                {
+                    Console.WriteLine($"📨 Guardando notificación embarazo: {data.Mensaje}");
+                    var noti = new Notificacion
+                    {
+                        EmailUsuario = data.EmailUsuario,
+                        Mensaje = data.Mensaje,
+                        TipoUsuario = "CLIENTE"
+                    };
+                    db.Notificaciones.Add(noti);
+                }
+                else
+                {
+                    Console.WriteLine("⛔ Datos del evento embarazo inválidos.");
                 }
             }
 
