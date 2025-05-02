@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace NotificacionesService.Migrations
 {
     [DbContext(typeof(NotificacionesDbContext))]
-    [Migration("20250414233810_Init")]
-    partial class Init
+    [Migration("20250502072820_Inicial")]
+    partial class Inicial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -33,16 +33,21 @@ namespace NotificacionesService.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("EmailUsuario")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<DateTime>("Fecha")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("IdUsuario")
-                        .HasColumnType("integer");
 
                     b.Property<bool>("Leido")
                         .HasColumnType("boolean");
 
                     b.Property<string>("Mensaje")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("TipoUsuario")
                         .IsRequired()
                         .HasColumnType("text");
 

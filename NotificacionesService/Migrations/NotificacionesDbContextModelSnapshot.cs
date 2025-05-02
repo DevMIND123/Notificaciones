@@ -22,7 +22,7 @@ namespace NotificacionesService.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("Notificacion", b =>
+            modelBuilder.Entity("NotificacionesService.Models.Notificacion", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -50,7 +50,7 @@ namespace NotificacionesService.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Notificaciones");
+                    b.ToTable("notificaciones");
                 });
 #pragma warning restore 612, 618
         }

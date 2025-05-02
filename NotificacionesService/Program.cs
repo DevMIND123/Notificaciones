@@ -42,7 +42,7 @@ app.MapGet("/api.retochimba.com/notificaciones", async (HttpContext http, Notifi
     {
         var handler = new JwtSecurityTokenHandler();
         var key = System.Text.Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Secret"]!);
-        var claims = handler.ValidateToken(token, new TokenValidationParameters
+        var claimsPrincipal = handler.ValidateToken(token, new TokenValidationParameters
         {
             ValidateIssuer = false,
             ValidateAudience = false,
@@ -51,8 +51,19 @@ app.MapGet("/api.retochimba.com/notificaciones", async (HttpContext http, Notifi
             IssuerSigningKey = new SymmetricSecurityKey(key)
         }, out _);
 
-        var email = claims.Identity?.Name;
-        if (email == null) return Results.Unauthorized();
+        foreach (var claim in claimsPrincipal.Claims)
+        {
+            Console.WriteLine($"🧩 CLAIM: {claim.Type} = {claim.Value}");
+        }
+
+        var email = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                  ?? claimsPrincipal.FindFirst("sub")?.Value;
+
+        if (string.IsNullOrEmpty(email))
+        {
+            Console.WriteLine("⛔ No se encontró el claim 'email' en el token.");
+            return Results.Unauthorized();
+        }
 
         Console.WriteLine($"📧 Email extraído del token: {email}");
 
@@ -71,15 +82,15 @@ app.MapGet("/api.retochimba.com/notificaciones", async (HttpContext http, Notifi
 });
 
 // 🚀 Consumidor Kafka
-var config = new ConsumerConfig
-{
-    BootstrapServers = builder.Configuration["Kafka:BootstrapServers"],
-    GroupId = builder.Configuration["Kafka:GroupId"],
-    AutoOffsetReset = AutoOffsetReset.Earliest
-};
-
 _ = Task.Run(() =>
 {
+    var config = new ConsumerConfig
+    {
+        BootstrapServers = builder.Configuration["Kafka:BootstrapServers"],
+        GroupId = builder.Configuration["Kafka:GroupId"],
+        AutoOffsetReset = AutoOffsetReset.Earliest
+    };
+
     using var consumer = new ConsumerBuilder<Ignore, string>(config).Build();
     var topics = builder.Configuration.GetSection("Kafka:Topic").Get<string[]>();
     consumer.Subscribe(topics);
@@ -111,13 +122,22 @@ _ = Task.Run(() =>
             else if (cr.Topic == "ciclo-registrado")
             {
                 var data = JsonSerializer.Deserialize<EventoCicloKafkaDTO>(cr.Message.Value);
-                var noti = new Notificacion
+                if (data is not null && !string.IsNullOrEmpty(data.EmailUsuario) && !string.IsNullOrEmpty(data.Mensaje))
                 {
-                    EmailUsuario = data!.EmailUsuario,
-                    Mensaje = "📅 Tu nuevo ciclo menstrual ha sido registrado correctamente.",
-                    TipoUsuario = "CLIENTE"
-                };
-                db.Notificaciones.Add(noti);
+                    Console.WriteLine($"📨 Guardando notificación ciclo: {data.Mensaje}");
+                    var noti = new Notificacion
+                    {
+                        EmailUsuario = data.EmailUsuario,
+                        Mensaje = data.Mensaje,
+                        TipoUsuario = "CLIENTE"
+                    };
+                    db.Notificaciones.Add(noti);
+                    db.SaveChanges();
+                }
+                else
+                {
+                    Console.WriteLine("⛔ Datos del evento ciclo inválidos.");
+                }
             }
 
             db.SaveChanges();
