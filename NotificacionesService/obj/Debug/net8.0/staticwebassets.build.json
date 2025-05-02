@@ -1,12 +1,11 @@
 {
   "Version": 1,
-  "Hash": "4PT2T2BeBcmxd6t5cgDf9z3SIBK3ViDvytbXQhAzk2w=",
+  "Hash": "PRP9/oqCGaZ/TJ6UbpjpNpEQC30oPiw7k9upmIojRFI=",
   "Source": "NotificacionesService",
   "BasePath": "_content/NotificacionesService",
   "Mode": "Default",
   "ManifestType": "Build",
   "ReferencedProjectsConfiguration": [],
   "DiscoveryPatterns": [],
-  "Assets": [],
-  "Endpoints": []
+  "Assets": []
 }
