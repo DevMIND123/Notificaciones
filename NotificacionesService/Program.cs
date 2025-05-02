@@ -2,6 +2,10 @@ using Confluent.Kafka;
 using Microsoft.EntityFrameworkCore;
 using NotificacionesService.Data;
 using NotificacionesService.Models;
+using System.Text.Json;
+using System.IdentityModel.Tokens.Jwt;
+using Microsoft.IdentityModel.Tokens;
+using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,23 +26,51 @@ builder.Services.AddDbContext<NotificacionesDbContext>(options =>
 
 var app = builder.Build();
 
-// 🧭 Requerido para enrutar las peticiones
 app.UseRouting();
-
-// 🧠 Activar CORS correctamente entre Routing y Endpoints
 app.UseCors("AllowFrontend");
 
-// ✅ Endpoint GET /notificaciones/{idUsuario}
-app.MapGet("/api.retochimba.com/notificaciones/{idUsuario}", async (int idUsuario, NotificacionesDbContext db) =>
+// ✅ Endpoint GET /notificaciones con email extraído del token
+app.MapGet("/api.retochimba.com/notificaciones", async (HttpContext http, NotificacionesDbContext db) =>
 {
-    var notis = await db.Notificaciones
-        .Where(n => n.IdUsuario == idUsuario)
-        .OrderByDescending(n => n.Fecha)
-        .ToListAsync();
-    return Results.Ok(notis);
+    string? authHeader = http.Request.Headers["Authorization"];
+    if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer "))
+        return Results.Unauthorized();
+
+    string token = authHeader.Substring("Bearer ".Length).Trim();
+
+    try
+    {
+        var handler = new JwtSecurityTokenHandler();
+        var key = System.Text.Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Secret"]!);
+        var claims = handler.ValidateToken(token, new TokenValidationParameters
+        {
+            ValidateIssuer = false,
+            ValidateAudience = false,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(key)
+        }, out _);
+
+        var email = claims.Identity?.Name;
+        if (email == null) return Results.Unauthorized();
+
+        Console.WriteLine($"📧 Email extraído del token: {email}");
+
+        var notis = await db.Notificaciones
+            .Where(n => n.EmailUsuario == email)
+            .OrderByDescending(n => n.Fecha)
+            .ToListAsync();
+
+        return Results.Ok(notis);
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"❌ Error validando token JWT: {ex.Message}");
+        return Results.Unauthorized();
+    }
 });
 
-// 🚀 Iniciar consumidor Kafka
+// 🚀 Consumidor Kafka
 var config = new ConsumerConfig
 {
     BootstrapServers = builder.Configuration["Kafka:BootstrapServers"],
@@ -49,13 +81,15 @@ var config = new ConsumerConfig
 _ = Task.Run(() =>
 {
     using var consumer = new ConsumerBuilder<Ignore, string>(config).Build();
-    consumer.Subscribe(builder.Configuration["Kafka:Topic"]);
+    consumer.Subscribe(new[] {
+        builder.Configuration["Kafka:Topic"],
+        "ciclo-registrado"
+    });
 
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<NotificacionesDbContext>();
 
     db.Database.EnsureCreated();
-
     Console.WriteLine("🟢 Escuchando eventos Kafka...");
 
     while (true)
@@ -65,25 +99,34 @@ _ = Task.Run(() =>
             var cr = consumer.Consume();
             Console.WriteLine($"📨 Evento recibido: {cr.Message.Value}");
 
-            var data = System.Text.Json.JsonSerializer.Deserialize<EventoKafkaDTO>(cr.Message.Value);
-
-            Console.WriteLine($"🔍 Datos deserializados: id={data.IdUsuario}, nombre={data.Nombre}");
-
-            var noti = new Notificacion
+            if (cr.Topic == "usuario-creado")
             {
-                IdUsuario = data.IdUsuario,
-                Mensaje = $"🎉 ¡Bienvenido {data.Nombre} a Reto Chimba!",
-                TipoUsuario = data.Tipo
-            };
+                var data = JsonSerializer.Deserialize<EventoKafkaDTO>(cr.Message.Value);
+                var noti = new Notificacion
+                {
+                    EmailUsuario = data!.EmailUsuario,
+                    Mensaje = $"🎉 ¡Bienvenido {data.Nombre} a Reto Chimba!",
+                    TipoUsuario = data.Tipo
+                };
+                db.Notificaciones.Add(noti);
+            }
+            else if (cr.Topic == "ciclo-registrado")
+            {
+                var data = JsonSerializer.Deserialize<EventoCicloKafkaDTO>(cr.Message.Value);
+                var noti = new Notificacion
+                {
+                    EmailUsuario = data!.EmailUsuario,
+                    Mensaje = "📅 Tu nuevo ciclo menstrual ha sido registrado correctamente.",
+                    TipoUsuario = "CLIENTE"
+                };
+                db.Notificaciones.Add(noti);
+            }
 
-            db.Notificaciones.Add(noti);
             db.SaveChanges();
-
-            Console.WriteLine($"✅ Notificación guardada para usuario {noti.IdUsuario}");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"❌ ERROR al guardar notificación: {ex.Message}");
+            Console.WriteLine($"❌ ERROR al procesar evento Kafka: {ex.Message}");
         }
     }
 });
