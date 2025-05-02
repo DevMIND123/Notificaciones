@@ -320,3 +320,9 @@ C:\Users\Maikol Vergara\Downloads\Retro Chimba\Back\V5 Back\Notificaciones 01\No
 C:\Users\Maikol Vergara\Downloads\Retro Chimba\Back\V5 Back\Notificaciones 01\Notificaciones\NotificacionesService\obj\Debug\net8.0\NotificacionesService.pdb
 C:\Users\Maikol Vergara\Downloads\Retro Chimba\Back\V5 Back\Notificaciones 01\Notificaciones\NotificacionesService\obj\Debug\net8.0\NotificacionesService.genruntimeconfig.cache
 C:\Users\Maikol Vergara\Downloads\Retro Chimba\Back\V5 Back\Notificaciones 01\Notificaciones\NotificacionesService\obj\Debug\net8.0\ref\NotificacionesService.dll
+C:\Users\Personal\Documents\GitHub\Notificaciones\NotificacionesService\bin\Debug\net8.0\Microsoft.Bcl.Memory.dll
+C:\Users\Personal\Documents\GitHub\Notificaciones\NotificacionesService\bin\Debug\net8.0\Microsoft.IdentityModel.Abstractions.dll
+C:\Users\Personal\Documents\GitHub\Notificaciones\NotificacionesService\bin\Debug\net8.0\Microsoft.IdentityModel.JsonWebTokens.dll
+C:\Users\Personal\Documents\GitHub\Notificaciones\NotificacionesService\bin\Debug\net8.0\Microsoft.IdentityModel.Logging.dll
+C:\Users\Personal\Documents\GitHub\Notificaciones\NotificacionesService\bin\Debug\net8.0\Microsoft.IdentityModel.Tokens.dll
+C:\Users\Personal\Documents\GitHub\Notificaciones\NotificacionesService\bin\Debug\net8.0\System.IdentityModel.Tokens.Jwt.dll

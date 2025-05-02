@@ -81,10 +81,8 @@ var config = new ConsumerConfig
 _ = Task.Run(() =>
 {
     using var consumer = new ConsumerBuilder<Ignore, string>(config).Build();
-    consumer.Subscribe(new[] {
-        builder.Configuration["Kafka:Topic"],
-        "ciclo-registrado"
-    });
+    var topics = builder.Configuration.GetSection("Kafka:Topic").Get<string[]>();
+    consumer.Subscribe(topics);
 
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<NotificacionesDbContext>();
@@ -130,5 +128,3 @@ _ = Task.Run(() =>
         }
     }
 });
-
-app.Run();
