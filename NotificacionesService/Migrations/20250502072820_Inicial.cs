@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace NotificacionesService.Migrations
 {
     /// <inheritdoc />
-    public partial class Init : Migration
+    public partial class Inicial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -18,10 +18,11 @@ namespace NotificacionesService.Migrations
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    IdUsuario = table.Column<int>(type: "integer", nullable: false),
+                    EmailUsuario = table.Column<string>(type: "text", nullable: false),
                     Mensaje = table.Column<string>(type: "text", nullable: false),
                     Fecha = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    Leido = table.Column<bool>(type: "boolean", nullable: false)
+                    Leido = table.Column<bool>(type: "boolean", nullable: false),
+                    TipoUsuario = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {

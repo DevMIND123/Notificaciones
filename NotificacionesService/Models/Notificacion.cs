@@ -1,5 +1,12 @@
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace NotificacionesService.Models;
+
+[Table("notificaciones")] // Nombre en minúscula
 public class Notificacion
 {
+    [Key]
     public int Id { get; set; }
 
     public string EmailUsuario { get; set; } = string.Empty;
