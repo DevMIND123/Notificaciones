@@ -8,5 +8,5 @@ public class NotificacionesDbContext : DbContext
     public NotificacionesDbContext(DbContextOptions<NotificacionesDbContext> options)
         : base(options) { }
 
-    public DbSet<Notificacion> Notificaciones => Set<Notificacion>();
+    public DbSet<Notificacion> Notificaciones { get; set; }
 }
