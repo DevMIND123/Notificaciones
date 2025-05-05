@@ -7,8 +7,8 @@ COPY Notificaciones.sln .
 COPY NotificacionesService/ NotificacionesService/
 
 # Restaurar dependencias
-WORKDIR /src/NotificacionesService
-RUN dotnet restore
+WORKDIR /src
+RUN dotnet restore Notificaciones.sln
 
 # Publicar la app
 RUN dotnet publish -c Release -o /app/publish
