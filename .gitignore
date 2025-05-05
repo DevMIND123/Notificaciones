@@ -1,1 +1,21 @@
 .env
+
+# Ignorar archivos y carpetas de compilación de .NET
+**/bin/
+**/obj/
+*.dll
+*.exe
+*.pdb
+*.cache
+*.log
+*.user
+*.vs/
+*.suo
+*.sln.docstates
+
+# Archivos de configuración local
+*.csproj.user
+
+# Carpetas de publicación
+publish/
+

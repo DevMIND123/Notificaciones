@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  postgres-notificaciones:
+    image: postgres:13
+    container_name: postgres-notificaciones
+    restart: always
+    ports:
+      - "5433:5432"  # Puedes cambiar 5433 si ya está en uso
+    environment:
+      POSTGRES_DB: notificacionesdb
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    volumes:
+      - notificaciones_pgdata:/var/lib/postgresql/data
+
+volumes:
+  notificaciones_pgdata:
